@@ -1,0 +1,34 @@
+#include <QObject>
+#include <QSerialPort>
+#include <QFile>
+#include <QThread>
+#include <QProgressBar>
+
+class IAPController : public QObject {
+    Q_OBJECT
+
+public:
+    IAPController(QSerialPort*serialPort, QProgressBar* progressBar, QObject* parent = nullptr);
+    void startIAP(const QString& binFilePath);
+
+signals:
+    void finished();
+    void updateProgress(int progress);
+
+public slots:
+    void onBytesWritten(qint64 bytes);
+    void onReadyRead();
+    void onStartIAP();
+
+private:
+    QSerialPort* m_serialPort;
+    QFile m_binFile;
+    QByteArray m_buffer;
+    QThread* m_thread;
+    int m_totalSize;
+    int m_bytesSent;
+    int m_chunkSize;
+    QProgressBar* m_progressBar;
+
+    void sendNextChunk();
+};
